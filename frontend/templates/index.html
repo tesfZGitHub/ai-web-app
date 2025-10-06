@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Sentiment Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        textarea { width: 100%; height: 100px; margin: 10px 0; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .result { margin-top: 20px; padding: 10px; border: 1px solid #ddd; }
+        .loading { display: none; color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>AI Sentiment Analysis</h1>
+    <form id="analysisForm">
+        <textarea id="textInput" placeholder="Enter text to analyze..."></textarea>
+        <br>
+        <button type="submit">Analyze Sentiment</button>
+    </form>
+    
+    <div id="loading" class="loading">Analyzing... Please wait.</div>
+    
+    <div id="result" class="result" style="display: none;">
+        <h3>Result:</h3>
+        <div id="resultContent"></div>
+    </div>
+
+    <script>
+        document.getElementById('analysisForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const text = document.getElementById('textInput').value.trim();
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
+            const resultContent = document.getElementById('resultContent');
+            
+            // Hide previous results, show loading
+            resultDiv.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            
+            if (!text) {
+                showError('Please enter some text to analyze.');
+                loadingDiv.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('text', text);
+                
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(data);
+                } else {
+                    showError(data.error || 'An error occurred');
+                }
+            } catch (err) {
+                showError('Network error: ' + err.message);
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        });
+        
+        function showResult(data) {
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            // Safely handle the response data
+            const text = data.text || 'No text';
+            const sentiment = data.sentiment || 'UNKNOWN';
+            const confidence = data.confidence || 0;
+            
+            resultContent.innerHTML = `
+                <p><strong>Text:</strong> "${text}"</p>
+                <p><strong>Sentiment:</strong> ${sentiment}</p>
+                <p><strong>Confidence:</strong> ${confidence}</p>
+            `;
+            resultDiv.style.display = 'block';
+        }
+        
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultContent.innerHTML = `<p style="color: red;">Error: ${message}</p>`;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
