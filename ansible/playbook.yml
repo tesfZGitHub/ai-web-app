@@ -1,0 +1,56 @@
+---
+- hosts: webai
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - ufw
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Add deployer to docker group
+      user:
+        name: deployer
+        groups: docker
+        append: yes
+
+    - name: Clone app repository
+      git:
+        repo: 'https://github.com/tesfZGitHub/ai-web-application.git'
+        dest: /opt/ai-web-application
+        version: main
+
+    - name: Deploy with docker compose
+      shell: |
+        cd /opt/ai-web-application
+        docker compose pull
+        docker compose up -d --build
