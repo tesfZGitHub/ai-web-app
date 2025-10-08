@@ -1,35 +1,76 @@
-name: Deploy to VM
+name: ğDeploy to VM
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Test Backend
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          python -c "from transformers import pipeline; print('âœ… Backend dependencies OK')"
+          
+      - name: Test Frontend
+        run: |
+          cd frontend
+          pip install -r requirements.txt
+          python -c "import flask; print('âœ… Frontend dependencies OK')"
+
   deploy:
     runs-on: ubuntu-latest
-
+    needs: test
+    if: github.ref == 'refs/heads/main'  # Only deploy on main branch
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.8.1
+      - name: ğŸ¯ Deploy to VM
+        uses: appleboy/ssh-action@v0.1.7
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Copy code to VM
-        run: |
-          # Create target folder on VM
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "mkdir -p ~/ai-web-app"
-          # Sync repo excluding .git
-          rsync -avz --exclude='.git' ./ ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:~/ai-web-app/
-
-      - name: Deploy Docker containers
-        run: |
-          ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "
-            cd ~/ai-web-app &&
-            docker-compose down &&
-            docker-compose up -d --build
-          "
-
+          host: ${{ secrets.VM_HOST }}        # 192.168.80.130
+          username: ${{ secrets.VM_USER }}    # tesfaye
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "=== Starting Automated Deployment ==="
+            echo "ğUser: $(whoami)"
+            echo "ğDirectory: $(pwd)"
+            echo "ğBranch: ${{ github.ref }}"
+            echo "ğCommit: ${{ github.sha }}"
+            
+            # Navigate to application directory
+            cd /home/by/ai-web-app
+            
+            # Pull latest code from GitHub
+            echo "ğPulling latest code..."
+            git fetch origin
+            git reset --hard origin/main
+            
+            # Stop and rebuild containers
+            echo "ğRebuilding containers..."
+            docker compose down
+            docker compose up -d --build
+            
+            # Wait for services to start
+            echo "âWaiting for services to start..."
+            sleep 15
+            
+            # Health checks
+            echo "ğRunning health checks..."
+            docker ps
+            
+            echo "ğChecking backend health..."
+            curl -f http://localhost:8000/health || echo "âŒ Backend health check failed"
+            
+            echo "ğChecking frontend health..."
+            curl -f http://localhost:5000/health || echo "âŒ Frontend health check failed"
+            
+            echo "âDeployment completed successfully!"
+            echo " Frontend: http://192.168.80.130:5000"
+            echo "ğBackend API: http://192.168.80.130:8000"
+            echo "ğAPI Docs: http://192.168.80.130:8000/docs"
