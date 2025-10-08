@@ -1,76 +1,41 @@
-name: Deploy to VM
+name: Deploy with Oneshot Systemd
 
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Test Backend
-        run: |
-          cd backend
-          pip install -r requirements.txt
-          python -c "from transformers import pipeline; print('‚úÖ Backend dependencies OK')"
-          
-      - name: Test Frontend
-        run: |
-          cd frontend
-          pip install -r requirements.txt
-          python -c "import flask; print('‚úÖ Frontend dependencies OK')"
-
   deploy:
     runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/main'  # Only deploy on main branch
-    
     steps:
-      - name: üéØ Deploy to VM
+      - name: Deploy Application
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.VM_HOST }}        # 192.168.80.130
-          username: ${{ secrets.VM_USER }}    # tesfaye
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "=== Starting Automated Deployment ==="
-            echo "User: $(whoami)"
-            echo "Directory: $(pwd)"
-            echo "Branch: ${{ github.ref }}"
-            echo "Commit: ${{ github.sha }}"
-            
-            # Navigate to application directory
+            echo "=== Deploying with Oneshot Systemd ==="
             cd /home/by/ai-web-app
             
-            # Pull latest code from GitHub
-            echo "Pulling latest code..."
-            git fetch origin
-            git reset --hard origin/main
+            # Update code
+            git pull origin main
             
-            # Stop and rebuild containers
-            echo "Rebuilding containers..."
-            docker compose down
-            docker compose up -d --build
+            # Manually stop current containers (bypass systemd)
+            echo "Stopping current containers..."
+            docker compose down || echo "Containers already stopped or can't be stopped"
             
-            # Wait for services to start
-            echo "‚Waiting for services to start..."
+            # Use systemd to start new containers
+            echo "Starting new containers via systemd..."
+            sudo systemctl start webai.service
+            
+            # Verify deployment
+            echo "Waiting for services..."
             sleep 15
             
-            # Health checks
-            echo "Running health checks..."
+            echo "Health checks:"
             docker ps
+            curl -f http://localhost:5000/health && echo "Frontend healthy"
+            curl -f http://localhost:8000/health && echo "Backend healthy"
             
-            echo "Checking backend health..."
-            curl -f http://localhost:8000/health || echo "‚ùå Backend health check failed"
-            
-            echo "Checking frontend health..."
-            curl -f http://localhost:5000/health || echo "‚ùå Frontend health check failed"
-            
-            echo "‚Deployment completed successfully!"
-            echo " Frontend: http://192.168.80.130:5000"
-            echo "Backend API: http://192.168.80.130:8000"
-            echo "API Docs: http://192.168.80.130:8000/docs"
+            echo "Deployment completed!"
