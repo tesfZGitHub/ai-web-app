@@ -1,4 +1,4 @@
-name: Deploy AI Web App
+name: Deploy to VM
 
 on:
   push:
@@ -8,22 +8,19 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Copy files to VM
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "."
-          target: "/home/by/ai-web-app"
-      - name: SSH to VM and restart service
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            echo "Starting deployment..."
             cd /home/by/ai-web-app
-            docker-compose pull
-            docker-compose up -d
+            git pull origin main || git clone https://github.com/tesfZGitHub/ai-web-app.git /home/by/ai-web-app
+            docker compose down
+            docker compose up -d --build
+            echo "✅ Deployment completed successfully"
