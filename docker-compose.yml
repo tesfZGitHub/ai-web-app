@@ -1,6 +1,7 @@
 services:
   backend:
     build: ./backend
+    container_name: webai_backend
     ports:
       - "8000:8000"
     environment:
@@ -11,6 +12,7 @@ services:
 
   frontend:
     build: ./frontend
+    container_name: webai_frontend
     ports:
       - "5000:5000"
     environment:

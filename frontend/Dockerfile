@@ -8,7 +8,6 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Then copy the rest of the application
 COPY . .
 
 EXPOSE 5000

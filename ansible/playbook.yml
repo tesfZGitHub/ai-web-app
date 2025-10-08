@@ -24,7 +24,7 @@
 
     - name: Add Docker repository
       apt_repository:
-        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
         state: present
 
     - name: Install Docker
@@ -37,20 +37,25 @@
         state: present
         update_cache: yes
 
-    - name: Add deployer to docker group
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add user to docker group
       user:
-        name: deployer
+        name: by
         groups: docker
         append: yes
 
     - name: Clone app repository
       git:
-        repo: 'https://github.com/tesfZGitHub/ai-web-application.git'
+        repo: 'https://github.com/tesfZGitHub/ai-web-app.git'
         dest: /opt/ai-web-application
         version: main
 
     - name: Deploy with docker compose
       shell: |
         cd /opt/ai-web-application
-        docker compose pull
         docker compose up -d --build

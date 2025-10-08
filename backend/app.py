@@ -6,7 +6,7 @@ import os
 app = FastAPI()
 
 print("Loading sentiment analysis model...")
-# Use a simpler model that loads faster for testing
+# simpler model is used ot loads faster for testing
 classifier = pipeline("sentiment-analysis", 
                      model="distilbert-base-uncased-finetuned-sst-2-english")
 print("Model loaded successfully!")
@@ -34,7 +34,7 @@ async def predict(request: TextRequest):
 def health_check():
     return {"status": "healthy"}
 
-# Add this to make sure the root endpoint works
+# this makes sure the root endpoint works
 @app.get("/test")
 def test_endpoint():
     return {"message": "Test endpoint working"}

@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_KEY }}
           source: "."
-          target: "/home/by/ai-web-application"
+          target: "/home/by/ai-web-app"
       - name: SSH to VM and restart service
         uses: appleboy/ssh-action@v0.1.5
         with:
@@ -24,6 +24,6 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_KEY }}
           script: |
-            cd /home/by/ai-web-application
+            cd /home/by/ai-web-app
             docker-compose pull
             docker-compose up -d
