@@ -1,16 +1,31 @@
-name: Test SSH with Password
+name: Deploy AI Web App
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Test SSH with Password
-        uses: appleboy/ssh-action@v0.1.5
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install SSH Client
+        run: sudo apt-get update && sudo apt-get install -y openssh-client
+
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          password: ${{ secrets.VM_PASSWORD }} 
-          script: 
-            echo " Connected with password!"
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /ai-web-application || mkdir -p /opt/ai-web-app
+            cd /ai-web-app
+            git pull || git clone https://github.com/${{ github.repository }} .
+            docker-compose down
+            docker-compose up -d --build
+
