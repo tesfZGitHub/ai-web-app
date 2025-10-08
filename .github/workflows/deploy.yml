@@ -1,4 +1,4 @@
-name: Deploy AI Web App
+name: Deploy AI Web App (VMware)
 
 on:
   push:
@@ -13,19 +13,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install SSH Client
-        run: sudo apt-get update && sudo apt-get install -y openssh-client
-
-      - name: Deploy to VM
+      - name: Test SSH Connection
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /ai-web-application || mkdir -p /opt/ai-web-app
-            cd /ai-web-app
-            git pull || git clone https://github.com/${{ github.repository }} .
-            docker-compose down
+            echo "✅ SSH connection successful on $(hostname)"
+            whoami
+            pwd
+
+      - name: Deploy application to VM
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            echo "🚀 Starting deployment..."
+
+            cd /home/by/ai-web-app
+            echo "📂 Current path: $(pwd)"
+
+            echo "🔄 Pulling latest code from GitHub..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "🧱 Rebuilding and restarting Docker containers..."
+            docker-compose down || true
             docker-compose up -d --build
+
+            echo "✅ Deployment successful!"
 
