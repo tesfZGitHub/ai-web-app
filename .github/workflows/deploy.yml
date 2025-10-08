@@ -16,11 +16,14 @@ jobs:
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}    # This must match your secret name
           script: |
-            echo "Starting deployment..."
+            echo "=== Starting deployment ==="
+            whoami
+            pwd
             cd /home/by/ai-web-app
-            git pull origin main || git clone https://github.com/tesfZGitHub/ai-web-app.git /home/by/ai-web-app
+            git pull origin main
             docker compose down
             docker compose up -d --build
+            docker ps
             echo "✅ Deployment completed successfully"
