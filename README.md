@@ -8,3 +8,4 @@ This project deploys a two-tier AI inference service on a single VM:
 
 ```bash
 docker compose up --build
+# Last deployment: Wed Oct  8 12:37:28 EAT 2025
