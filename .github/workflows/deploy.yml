@@ -1,22 +1,16 @@
-name: Deploy to VM
+name: Test SSH with Password
 
-on:
-  push:
-    branches: [ main ]
+on: [push]
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     steps:
-      - name: Quick Deploy
+      - name: Test SSH with Password
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo " fast deployment..."
-            cd /home/by/ai-web-app
-            git pull origin main
-            docker compose restart
-            echo " Deployment completed in ${SECONDS}s"
+          password: ${{ secrets.VM_PASSWORD }} 
+          script: 
+            echo " Connected with password!"
