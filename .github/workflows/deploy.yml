@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 env:
-  VM_HOST: 192.168.80.130
+  VM_HOST: 192.168.80.128
   VM_USER: by
 
 jobs:
