@@ -52,10 +52,10 @@
     - name: Clone app repository
       git:
         repo: 'https://github.com/tesfZGitHub/ai-web-app.git'
-        dest: /opt/ai-web-application
+        dest: /home/by/ai-web-app
         version: main
 
     - name: Deploy with docker compose
       shell: |
-        cd /opt/ai-web-application
+        cd /home/by/ai-web-app
         docker compose up -d --build
