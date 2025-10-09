@@ -1,0 +1,17 @@
+[Unit]
+Description=AI Web Application
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/home/by/ai-web-app
+ExecStart=/snap/bin/docker-compose up -d 
+ExecStop=/snap/bin/docker-compose down    
+TimeoutStartSec=600
+User=by
+Group=by
+
+[Install]
+WantedBy=multi-user.target
