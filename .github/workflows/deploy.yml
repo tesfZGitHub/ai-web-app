@@ -5,8 +5,8 @@ on:
     branches: [ main ]
 
 env:
-  VM_HOST: 192.168.80.128
-  VM_USER: by
+  VM_HOST: 192.168.42.129
+  VM_USER: tesfaye
 
 jobs:
   deploy:
@@ -34,22 +34,22 @@ jobs:
     - name: Deploy application
       run: |
         ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} "
-          set -e  # Exit on error
+          set -e
           
           cd ~/ai-web-app
           echo '=== Pulling latest code ==='
           git pull origin main
           
           echo '=== Building and starting containers ==='
-          sudo docker-compose down
-          sudo docker-compose build --no-cache
-          sudo docker-compose up -d
+          sudo docker compose down
+          sudo docker compose build --no-cache
+          sudo docker compose up -d
           
           echo '=== Waiting for services to start ==='
           sleep 10
           
           echo '=== Checking container health ==='
-          sudo docker-compose ps
+          sudo docker compose ps
           curl -f http://localhost:5000 > /dev/null 2>&1 && echo 'Frontend is up' || echo 'Frontend check failed'
           curl -f http://localhost:8000 > /dev/null 2>&1 && echo 'Backend is up' || echo 'Backend check failed'
           
