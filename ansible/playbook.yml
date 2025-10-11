@@ -45,17 +45,17 @@
 
     - name: Add user to docker group
       user:
-        name: by
+        name: tesfaye
         groups: docker
         append: yes
 
     - name: Clone app repository
       git:
         repo: 'https://github.com/tesfZGitHub/ai-web-app.git'
-        dest: /home/by/ai-web-app
+        dest: /home/tesfaye/ai-web-app
         version: main
 
     - name: Deploy with docker compose
       shell: |
-        cd /home/by/ai-web-app
+        cd /home/tesfaye/ai-web-app
         docker compose up -d --build
