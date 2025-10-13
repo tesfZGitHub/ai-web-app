@@ -6,7 +6,6 @@ import os
 app = FastAPI()
 
 print("Loading sentiment analysis model...")
-# simpler model is used ot loads faster for testing
 classifier = pipeline("sentiment-analysis", 
                      model="distilbert-base-uncased-finetuned-sst-2-english")
 print("Model loaded successfully!")
