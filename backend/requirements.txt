@@ -1,6 +1,8 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-transformers==4.35.0
-torch==2.2.0
-accelerate==0.24.1
 numpy==1.24.3
+fastapi==0.95.2
+uvicorn[standard]==0.22.0
+transformers==4.40.0
+torch==2.2.0+cpu --find-links https://download.pytorch.org/whl/cpu
+sentencepiece==0.1.99
+pydantic==1.10.11
+accelerate>=0.20.0
