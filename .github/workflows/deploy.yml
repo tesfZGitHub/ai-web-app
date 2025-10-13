@@ -1,12 +1,12 @@
-name: Deploy to VM
+name: Deploy AI App to VM
 
 on:
   push:
     branches: [ main ]
 
 env:
-  VM_HOST: 192.168.42.129
-  VM_USER: my
+  VM_HOST: 192.168.42.128  # ← Updated to your actual VM IP
+  VM_USER: tesfaye         # ← Updated to your actual user
 
 jobs:
   deploy:
@@ -17,45 +17,58 @@ jobs:
       uses: actions/checkout@v4
     
     - name: Setup SSH
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      uses: webfactory/ssh-agent@v0.8.0  # ← Better SSH handling
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    
+    - name: Create environment file
       run: |
-        mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        cat >> ~/.ssh/config << EOF
-        Host ${{ env.VM_HOST }}
-          HostName ${{ env.VM_HOST }}
-          User ${{ env.VM_USER }}
-          StrictHostKeyChecking no
-          UserKnownHostsFile /dev/null
-        EOF
+        ssh -o StrictHostKeyChecking=no ${{ env.VM_USER }}@${{ env.VM_HOST }} "
+          mkdir -p /opt/ai-app
+          cat > /opt/ai-app/.env << 'EOT'
+MODEL_NAME=distilbert-base-uncased-finetuned-sst-2-english
+BACKEND_URL=http://backend:8000
+PORT=8000
+FLASK_ENV=production
+TRANSFORMERS_CACHE=/app/cache
+EOT
+        "
+    
+    - name: Copy application files
+      run: |
+        scp -o StrictHostKeyChecking=no -r ./* ${{ env.VM_USER }}@${{ env.VM_HOST }}:/opt/ai-app/
     
     - name: Deploy application
       run: |
-        ssh ${{ env.VM_USER }}@${{ env.VM_HOST }} "
+        ssh -o StrictHostKeyChecking=no ${{ env.VM_USER }}@${{ env.VM_HOST }} "
           set -e
+          echo '=== Starting deployment ==='
           
-          cd ~/ai-web-app
-          echo '=== Pulling latest code ==='
-          git pull origin main
+          cd /opt/ai-app
           
-          echo '=== Building and starting containers ==='
-          sudo docker compose down
-          sudo docker compose build --no-cache
-          sudo docker compose up -d
+          echo '=== Stopping existing containers ==='
+          sudo /usr/local/bin/docker-compose down || true
           
-          echo '=== Waiting for services to start ==='
-          sleep 10
+          echo '=== Building new containers ==='
+          sudo /usr/local/bin/docker-compose build --no-cache
           
-          echo '=== Checking container health ==='
-          sudo docker compose ps
-          curl -f http://localhost:5000 > /dev/null 2>&1 && echo 'Frontend is up' || echo 'Frontend check failed'
-          curl -f http://localhost:8000 > /dev/null 2>&1 && echo 'Backend is up' || echo 'Backend check failed'
+          echo '=== Starting services ==='
+          sudo /usr/local/bin/docker-compose up -d
           
-          echo '=== Ensuring systemd service is running ==='
+          echo '=== Waiting for services to be healthy ==='
+          sleep 30
+          
+          echo '=== Checking container status ==='
+          sudo /usr/local/bin/docker-compose ps
+          
+          echo '=== Running health checks ==='
+          curl -f http://localhost:8000/health && echo '✅ Backend healthy' || echo '❌ Backend health check failed'
+          curl -f http://localhost:80/health && echo '✅ Frontend healthy' || echo '❌ Frontend health check failed'
+          
+          echo '=== Ensuring systemd service ==='
           sudo systemctl daemon-reload
-          sudo systemctl is-active ai-web-app.service || sudo systemctl start ai-web-app.service
+          sudo systemctl enable ai-app.service || true
+          sudo systemctl start ai-app.service || echo 'Service already running'
           
-          echo '=== Deployment successful ==='
+          echo '🎉 Deployment completed successfully!'
         "
