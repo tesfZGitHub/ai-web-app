@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-RUN groupadd -g 1000 tesfaye && useradd -m -u 1000 -g appuser tesfaye
+RUN groupadd -g 1000 appuser && useradd -m -u 1000 -g appuser appuser
 
 
 WORKDIR /app
