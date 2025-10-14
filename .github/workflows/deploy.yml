@@ -14,13 +14,12 @@ jobs:
       
     - name: Ensure app directory exists
       run: |
-        sudo mkdir -p /opt/ai-app
-        sudo chown -R $USER:$USER /opt/ai-app
+        mkdir -p /opt/ai-app
         
     - name: Copy application code
       run: |
         echo "Copying code from GitHub workspace to /opt/ai-app"
-        cp -r $GITHUB_WORKSPACE/* /opt/ai-app/
+        cp -r $GITHUB_WORKSPACE/* /opt/ai-app/ || true
         cp -r $GITHUB_WORKSPACE/.* /opt/ai-app/ 2>/dev/null || true
         
     - name: Navigate to app directory
@@ -28,12 +27,6 @@ jobs:
         cd /opt/ai-app
         echo "Current directory: $(pwd)"
         ls -la
-        
-    - name: Set proper permissions
-      run: |
-        cd /opt/ai-app
-        chmod +x *.sh 2>/dev/null || true
-        chmod 644 *.yml *.txt *.py 2>/dev/null || true
         
     - name: Deploy application
       run: |
