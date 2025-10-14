@@ -16,7 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py ./
 
 
-# Ensure models cache folder
 RUN mkdir -p /app/cache && chown -R appuser:appuser /app/cache
 
 

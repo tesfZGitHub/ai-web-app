@@ -15,7 +15,6 @@ ExecReload=/usr/local/bin/docker-compose restart
 TimeoutStartSec=300
 TimeoutStopSec=30
 
-# Run as tesfaye (who now has Docker access)
 User=tesfaye
 Group=tesfaye  # ← CHANGED from docker to tesfaye
 

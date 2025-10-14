@@ -1,8 +1,9 @@
-numpy==1.24.3
 fastapi==0.95.2
 uvicorn[standard]==0.22.0
 transformers==4.40.0
-torch==2.2.0+cpu --find-links https://download.pytorch.org/whl/cpu
+torch==2.2.0 --index-url https://download.pytorch.org/whl/cpu
 sentencepiece==0.1.99
 pydantic==1.10.11
 accelerate>=0.20.0
+requests==2.31.0
+numpy==1.24.0

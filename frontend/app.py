@@ -3,7 +3,7 @@ import requests
 import os
 
 app = Flask(__name__)
-BACKEND_URL = os.getenv('BACKEND_URL', 'http://backend:8000')
+BACKEND_URL = os.getenv('BACKEND_URL', 'http://localhost:8000')
 
 @app.route('/')
 def index():
@@ -12,7 +12,9 @@ def index():
 @app.route('/analyze', methods=['POST'])
 def analyze():
     try:
-        text = request.form.get('text', '').strip()
+        data = request.get_json()  # ✅ read JSON from frontend
+        text = (data.get('text') if data else '').strip()
+        
         if not text:
             return jsonify({'error': 'No text provided'}), 400
         
@@ -44,4 +46,5 @@ def health():
     return jsonify({'status': 'healthy', 'service': 'frontend'})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
