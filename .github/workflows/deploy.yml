@@ -47,7 +47,7 @@ jobs:
         sleep 30
         
         echo '=== Health checks ==='
-        curl -f http://localhost:8000/health && echo '✅ Backend healthy'
-        curl -f http://localhost:5000/health && echo '✅ Frontend healthy'
+        curl -f http://localhost:8000/health && echo 'Backend healthy'
+        curl -f http://localhost:5000/health && echo 'Frontend healthy'
         
-        echo '🎉 Deployment completed successfully!'
+        echo ' Deployment completed successfully!'
