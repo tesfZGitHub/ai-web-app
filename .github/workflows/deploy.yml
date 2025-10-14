@@ -9,24 +9,19 @@ jobs:
     runs-on: self-hosted
     
     steps:
+    - name: Check Docker and Docker Compose
+      run: |
+        docker --version
+        docker-compose --version
+        docker compose version || echo "docker compose not available"
+        
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Ensure app directory exists
-      run: |
-        mkdir -p /opt/ai-app
-        
     - name: Copy application code
       run: |
-        echo "Copying code from GitHub workspace to /opt/ai-app"
+        mkdir -p /opt/ai-app
         cp -r $GITHUB_WORKSPACE/* /opt/ai-app/ || true
-        cp -r $GITHUB_WORKSPACE/.* /opt/ai-app/ 2>/dev/null || true
-        
-    - name: Navigate to app directory
-      run: |
-        cd /opt/ai-app
-        echo "Current directory: $(pwd)"
-        ls -la
         
     - name: Deploy application
       run: |
@@ -35,13 +30,13 @@ jobs:
         cd /opt/ai-app
         
         echo '=== Stopping existing containers ==='
-        docker compose down || true
+        docker-compose down || true
         
         echo '=== Building containers ==='
-        docker compose build --no-cache
+        docker-compose build --no-cache
         
         echo '=== Starting services ==='
-        docker compose up -d
+        docker-compose up -d
         
         echo '=== Waiting for services to be healthy ==='
         sleep 30
