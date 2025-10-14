@@ -9,27 +9,52 @@ jobs:
     runs-on: self-hosted
     
     steps:
-    - name: Update and deploy application
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Ensure app directory exists
+      run: |
+        sudo mkdir -p /opt/ai-app
+        sudo chown -R $USER:$USER /opt/ai-app
+        
+    - name: Copy application code
+      run: |
+        echo "Copying code from GitHub workspace to /opt/ai-app"
+        cp -r $GITHUB_WORKSPACE/* /opt/ai-app/
+        cp -r $GITHUB_WORKSPACE/.* /opt/ai-app/ 2>/dev/null || true
+        
+    - name: Navigate to app directory
+      run: |
+        cd /opt/ai-app
+        echo "Current directory: $(pwd)"
+        ls -la
+        
+    - name: Set proper permissions
+      run: |
+        cd /opt/ai-app
+        chmod +x *.sh 2>/dev/null || true
+        chmod 644 *.yml *.txt *.py 2>/dev/null || true
+        
+    - name: Deploy application
       run: |
         set -e
-        echo '🚀 Starting deployment...'
+        echo 'Starting deployment...'
         cd /opt/ai-app
-        
-        echo '=== Pulling latest code ==='
-        git pull origin main
         
         echo '=== Stopping existing containers ==='
         docker compose down || true
         
-        echo '=== Building and starting services ==='
-        docker compose up -d --build
+        echo '=== Building containers ==='
+        docker compose build --no-cache
         
-        echo '=== Waiting for services ==='
+        echo '=== Starting services ==='
+        docker compose up -d
+        
+        echo '=== Waiting for services to be healthy ==='
         sleep 30
         
-        echo '=== Verification ==='
-        docker compose ps
+        echo '=== Health checks ==='
         curl -f http://localhost:8000/health && echo '✅ Backend healthy'
         curl -f http://localhost:5000/health && echo '✅ Frontend healthy'
         
-        echo '🎉 Deployment completed!'
+        echo '🎉 Deployment completed successfully!'
