@@ -39,7 +39,6 @@
           - docker-ce
           - docker-ce-cli
           - containerd.io
-          # REMOVED: docker-compose-plugin (since you're using standalone)
         state: present
         update_cache: yes
 
@@ -49,7 +48,7 @@
         state: started
         enabled: yes
 
-    - name: Install Docker Compose manually  # ← ADDED
+    - name: Install Docker Compose manually  
       get_url:
         url: "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-{{ ansible_system | lower }}-{{ ansible_architecture }}"
         dest: /usr/local/bin/docker-compose
@@ -97,7 +96,7 @@
 
     - name: Ensure systemd unit file is present
       copy:
-        dest: /etc/systemd/system/ai-app.service
+        dest: /etc/systemd/system/ai-web-app.service
         content: |
           [Unit]
           Description=AI Web Application
@@ -108,9 +107,9 @@
           Type=oneshot
           RemainAfterExit=yes
           WorkingDirectory={{ app_dir }}
-          ExecStart=/usr/local/bin/docker-compose up -d  # ← CHANGED
-          ExecStop=/usr/local/bin/docker-compose down    # ← CHANGED
-          ExecReload=/usr/local/bin/docker-compose restart  # ← CHANGED
+          ExecStart=/usr/local/bin/docker-compose up -d  
+          ExecStop=/usr/local/bin/docker-compose down    
+          ExecReload=/usr/local/bin/docker-compose restart  
           TimeoutStartSec=300
           User={{ app_user }}
           Group={{ app_user }}
