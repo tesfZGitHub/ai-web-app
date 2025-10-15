@@ -3,7 +3,7 @@
   become: yes
   vars:
     app_user: "tesfaye"
-    app_dir: "/opt/ai-app"  # ← Changed from ai-web-app to ai-app
+    app_dir: "/opt/ai-app" 
     github_repo: "https://github.com/tesfZGitHub/ai-web-app.git"
 
   tasks:
