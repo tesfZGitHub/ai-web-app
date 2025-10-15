@@ -8,7 +8,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/opt/ai-app  
+WorkingDirectory=/home/tesfaye/opt/ai-app 
 ExecStart=/usr/local/bin/docker-compose up -d
 ExecStop=/usr/local/bin/docker-compose down
 ExecReload=/usr/local/bin/docker-compose restart
@@ -17,13 +17,6 @@ TimeoutStopSec=30
 
 User=tesfaye
 Group=tesfaye  
-
-# Security settings
-NoNewPrivileges=yes
-PrivateTmp=yes
-ProtectSystem=strict
-ProtectHome=yes
-ReadWritePaths=/opt/ai-app  # ← CHANGED from ai-web-app to ai-app
 
 [Install]
 WantedBy=multi-user.target
