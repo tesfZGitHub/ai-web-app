@@ -8,7 +8,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=/opt/ai-app  # ← CHANGED from ai-web-app to ai-app
+WorkingDirectory=/opt/ai-app  
 ExecStart=/usr/local/bin/docker-compose up -d
 ExecStop=/usr/local/bin/docker-compose down
 ExecReload=/usr/local/bin/docker-compose restart
@@ -16,7 +16,7 @@ TimeoutStartSec=300
 TimeoutStopSec=30
 
 User=tesfaye
-Group=tesfaye  # ← CHANGED from docker to tesfaye
+Group=tesfaye  
 
 # Security settings
 NoNewPrivileges=yes
