@@ -33,7 +33,8 @@ jobs:
         docker-compose down || true
         
         echo '=== Building containers ==='
-        docker-compose build --no-cache
+        #docker-compose build --no-cache
+        docker-compose build --pull
         
         echo '=== Starting services ==='
         docker-compose up -d
