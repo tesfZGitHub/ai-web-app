@@ -1,66 +1,49 @@
-name: Deploy AI App to VM
+name: Deploy AI App
 
 on:
   push:
     branches: [ main ]
 
-env:
-  VM_HOST: 192.168.42.128
-  VM_USER: tesfaye
-
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     
     steps:
+    - name: Check Docker and Docker Compose
+      run: |
+        docker --version
+        docker-compose --version
+        docker compose version || echo "docker compose not available"
+        
     - name: Checkout code
       uses: actions/checkout@v4
-    
-    - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.8.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-    
-    - name: Test SSH connection
+      
+    - name: Copy application code
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ env.VM_USER }}@${{ env.VM_HOST }} "echo '✅ SSH connection successful'"
-    
-    - name: Copy application files to VM
+        mkdir -p /opt/ai-app
+        cp -r $GITHUB_WORKSPACE/* /opt/ai-app/ || true
+        
+    - name: Deploy application
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ env.VM_USER }}@${{ env.VM_HOST }} "mkdir -p /opt/ai-app"
-        rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
-          --exclude '.git' \
-          --exclude '.github' \
-          ./ ${{ env.VM_USER }}@${{ env.VM_HOST }}:/opt/ai-app/
-    
-    - name: Deploy application on VM
-      run: |
-        ssh -o StrictHostKeyChecking=no ${{ env.VM_USER }}@${{ env.VM_HOST }} "
-          set -e
-          echo '🚀 Starting deployment...'
-          cd /opt/ai-app
-
-          echo '=== Stopping existing containers ==='
-          docker compose down || true
-
-          echo '=== Building containers ==='
-          docker compose build --no-cache
-
-          echo '=== Starting containers ==='
-          docker compose up -d
-
-          echo '=== Waiting for services to be healthy ==='
-          sleep 30
-
-          echo '=== Checking containers ==='
-          docker compose ps
-          
-          echo '=== Checking recent logs ==='
-          docker compose logs --tail=20
-
-          echo '=== Health checks ==='
-          curl -f http://localhost:8000/health && echo '✅ Backend healthy'
-          curl -f http://localhost:5000/health && echo '✅ Frontend healthy'
-
-          echo '🎉 Deployment completed successfully!'
-        "
+        set -e
+        echo 'Starting deployment...'
+        cd /opt/ai-app
+        
+        echo '=== Stopping existing containers ==='
+        docker-compose down || true
+        
+        echo '=== Building containers ==='
+        #docker-compose build --no-cache
+        docker-compose build --pull
+        
+        echo '=== Starting services ==='
+        docker-compose up -d
+        
+        echo '=== Waiting for services to be healthy ==='
+        sleep 30
+        
+        echo '=== Health checks ==='
+        curl -f http://localhost:8000/health && echo 'Backend healthy'
+        curl -f http://localhost:5000/health && echo 'Frontend healthy'
+        
+        echo 'Nice, Deployment completed successfully!'
