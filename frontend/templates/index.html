@@ -56,7 +56,7 @@
                 
                 if (response.ok) {
                     showResult(data);
-                    textInput.value = ""; // ✅ Clear text after success
+                    textInput.value = "";
                 } else {
                     showError(data.error || 'An error occurred');
                 }
