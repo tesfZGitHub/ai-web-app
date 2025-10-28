@@ -8,10 +8,7 @@ After=network-online.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-<<<<<<< HEAD
 WorkingDirectory=/opt/ai-app  
-=======
->>>>>>> fb40427f981ea0da3ebf2dc9824c21d887718092
 ExecStart=/usr/local/bin/docker-compose up -d
 ExecStop=/usr/local/bin/docker-compose down
 ExecReload=/usr/local/bin/docker-compose restart
